@@ -1,0 +1,61 @@
+{
+    "invoice_lines": [
+        {
+            "Description": "Coffee Machine",
+            "Quantity": 5.0,
+            "UoM": "each",
+            "UnitPrice": 1000.0,
+            "SKU": "O-100",
+            "TotalPrice": 5000.0
+        },
+        {
+            "Description": "Linux Laptop",
+            "Quantity": 10.0,
+            "UoM": "each",
+            "UnitPrice": 2000.0,
+            "SKU": "C-104",
+            "TotalPrice": 20000.0
+        },
+        {
+            "Description": "Project Quick Start",
+            "Quantity": 1.0,
+            "UoM": "each",
+            "UnitPrice": 20000.0,
+            "SKU": "S-103",
+            "TotalPrice": 20000.0
+        },
+        {
+            "Description": "Recurring Usage Fee",
+            "Quantity": 30.0,
+            "UoM": "each",
+            "UnitPrice": 200.0,
+            "SKU": "S-101",
+            "TotalPrice": 6000.0
+        },
+        {
+            "Description": "Software License Fee",
+            "Quantity": 50.0,
+            "UoM": "each",
+            "UnitPrice": 75.0,
+            "SKU": "S-102",
+            "TotalPrice": 3750.0
+        }
+    ],
+    "Seller": {
+        "Name": "ABC Corps LLC",
+        "Address": "123 Clayton Rd\nClayton, CA 94517",
+        "SupTaxId": "945-79-5353"
+    },
+    "Client": {
+        "Name": "Foundation LLC",
+        "Address": "123 Main St\nFremont, CA 94536",
+        "TaxId": "965-78-1117"
+    },
+    "InvoiceNo": "10001",
+    "InvoiceDate": "09/11/2024",
+    "SubTotal": 54750.00,
+    "TaxTotal": 5475.00,
+    "GrossTotal": 60225.00,
+    "SalesOrderNo": "00000100",
+    "Status": "Completed"
+}

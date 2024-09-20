@@ -1,0 +1,55 @@
+{
+    "totalAmount": 54750.00,
+    "supplier": {
+        "suptaxId": "945-79-5353",
+        "name": "Foundation LLC"
+    },
+    "orderNumber": "00000100",
+    "orderItems": [
+        {
+            "unitPrice": 1000.00,
+            "totalPrice": 5000.00,
+            "quantity": 5.00,
+            "productName": "Coffee Machine",
+            "productCode": "O-100",
+            "lineNumber": "0000000001"
+        },
+        {
+            "unitPrice": 2000.00,
+            "totalPrice": 20000.00,
+            "quantity": 10.00,
+            "productName": "Linux Laptop",
+            "productCode": "C-104",
+            "lineNumber": "0000000002"
+        },
+        {
+            "unitPrice": 20000.00,
+            "totalPrice": 20000.00,
+            "quantity": 1.00,
+            "productName": "Project Quick Start",
+            "productCode": "S-103",
+            "lineNumber": "0000000003"
+        },
+        {
+            "unitPrice": 200.00,
+            "totalPrice": 6000.00,
+            "quantity": 30.00,
+            "productName": "Recurring Usage Fee",
+            "productCode": "S-101",
+            "lineNumber": "0000000004"
+        },
+        {
+            "unitPrice": 75.00,
+            "totalPrice": 3750.00,
+            "quantity": 50.00,
+            "productName": "Software License Fee",
+            "productCode": "S-102",
+            "lineNumber": "0000000005"
+        }
+    ],
+    "client": {
+        "taxId": "965-78-1117",
+        "name": "Foundation LLC"
+    },
+    "accountName": "Foundation LLC"
+}

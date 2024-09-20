@@ -1,0 +1,34 @@
+{
+  "invoice_lines": [
+    {     
+      "Description": "Coffee Machine",
+      "Quantity": 10,
+      "Unit of Measure": "each",
+      "Unit Price":"1000",
+      "Net price": 10000,
+      "SKU": "IL-100"
+    },
+    {
+      "Description": "Laptop",
+      "Quantity": 20,
+      "Unit of Measure": "each",
+      "Unit Price":"1000",
+      "Net price": 20000,
+      "SKU": "BL-100"
+    }
+  ],
+  "supplier_details": {
+    "name": "Omega, Inc.",
+    "address": "641 Newton Views\nTapiachester, NY 95259",
+    "tax_id": "965-78-1117"
+  },
+  "client_details": {
+    "name": "Simpson, Barton and Barnes",
+    "address": "0855 Chen Junctions\nSanchezshire, MT 77237",
+    "tax_id": "945-79-5353"
+  },
+  "invoice_number": "23876575",
+  "invoice_date": "07/11/2024",
+  "Total Amount": "30000.0",
+  "SalesOrder" : "O-123456"
+}
