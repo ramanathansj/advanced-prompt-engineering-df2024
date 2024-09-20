@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GenAiPromptTemplate xmlns="http://soap.sforce.com/2006/04/metadata">
+    <activeVersion>1</activeVersion>
+    <description>Prompt Chaining</description>
+    <developerName>PromptChainingTemplateV1</developerName>
+    <masterLabel>PromptChainingTemplateV1</masterLabel>
+    <templateVersions>
+        <content>#### Instruction ####
+- Your role as data analyst is to analyze Sales Order, Invoices document in JSON format only. 
+- You analyze documents without having any opinion and strictly based on `&lt;InputData&gt;`.
+- You must extract requested data and answer the `&lt;Question&gt;` solely based on information provided in `&lt;InputData&gt;` only
+- ** You MUST send final response_format should be only in JSON **.
+
+
+#### Category Mapping Start ####
+{
+ &quot;Computer &amp; Gaming&quot;: [&quot;Laptop&quot;, &quot;Computer&quot;, &quot;Processor&quot;, &quot;CPU&quot;, &quot;Console&quot;, &quot;Gaming&quot;],
+ &quot;Software&quot;: [&quot;Software Package&quot;, &quot;Software Maintenance&quot;, &quot;Database&quot;, &quot;Licenses&quot;, &quot;Warranty&quot;, &quot;Technical Support&quot;],
+ &quot;Subscription&quot;: [&quot;User Per Month&quot;, &quot;12 Month&quot;, &quot;Annual&quot;, &quot;Login Per User&quot;]
+}
+
+
+***** InputData Validation Examples *****
+#### Example 1 (Valid): ####
+ {
+ &quot;invoice_lines&quot;: [
+  {
+   &quot;Description&quot;: &quot; PC Computer&quot;,
+   &quot;Quantity&quot;: 2.00,
+   &quot;UOM&quot;: &quot;each&quot;,
+   &quot;Net price&quot;: 400.00,
+   &quot;Tax Rate&quot;: 10,
+   &quot;Gross Worth&quot;: 880.00,
+   &quot;Category&quot; : &apos;&apos;Computer &amp; Gaming&quot;
+  }]}
+
+Explanation: This is valid format because it contains the required invoice_lines field with properly formatted data
+
+#### Example 2 (Valid): ####
+ {
+ &quot;invoice_lines&quot;: [
+ {
+  &quot;Description&quot;: &quot;Software Word Reader&quot;,
+  &quot;Quantity&quot;: 2.00,
+  &quot;UOM&quot;: &quot;each&quot;,
+  &quot;Net price&quot;: 400.00,
+  &quot;Tax Rate&quot;: 10,
+  &quot;Gross Worth&quot;: 880.00,
+  &quot;Category&quot; : &quot;Software&quot;
+ }]}
+
+Explanation: This is valid because it contains the required invoice_lines field with properly formatted data.
+#### Example 3 (InValid): ####
+JVBERi0xLjQKJZOMi54gUmVwb3J0TGFiIEdlbmVyYXRlZCBQREYgZG9jdW1lbnQgaHR0cDovL3d3dy5yZXBvcnRsYWIuY29tCjEgMCBvYmoKPDwKL0YxIDIgMCBSIC9GMiswIDcgMCBSIC9GMyswIDExIDAgUgo+PgplbmRvYmoKMiAwIG9ia
+
+Explanation: This is invalid format because it&apos;s not valid JSON and doesn&apos;t contain the required invoice_lines field.
+
+#### Example 4 (InValid): ####
+QgaHR0cDovL3d3dy5yZXBvcnRsYWIuY29tCjEgJVBERi0xLjQKJZOMi54gUmVwb3J0TGFiIEdlbmVyYXRlZCBQREYgZG9jdW1lbnVBERi0xLjQKJZOMi54g
+
+Explanation: This is invalid format because it&apos;s not valid JSON and doesn&apos;t contain the required invoice_lines field.
+
+
+##### Excepted response JSON Format #####
+
+{
+ &quot;Status&quot; : &quot;Completed&quot; | &quot;Failed&quot;
+ &quot;Exception&quot; : &quot;Capture and show applicable error messages&quot;,
+ &quot;invoice_lines&quot;: [
+ {
+ &quot;Product&quot;: &quot;Gaming PC Computer RX 580 8GB Ryzen 5 2x8GB Ram&quot;, // Extracted from the Description
+ &quot;Quantity&quot;: 2.00,
+ &quot;UOM&quot;: &quot;each&quot;,
+ &quot;Net_Price&quot;: 400.00, // Extracted from Net Price
+ &quot;Tax_Rate&quot;: 10, // Extracted from the Tax Rate
+ &quot;Total&quot;: 880.00, // Extracted from the Gross Worth
+ &quot;Category&quot; : &quot;Computer &amp; Gaming&quot;
+ }
+]
+}
+
+&lt;InputData&gt;
+{!$Input:FileData}
+&lt;/InputData&gt;
+
+&lt;Question&gt;
+1. Is &lt;InputData&gt; ValidFormat ?
+2. Is &lt;InputData&gt; contains invoice_lines array?
+3. Populate JSON response based on results of 1 &amp; 2 questions. 
+&lt;/Question&gt;
+
+&lt;Instruction&gt;
+- You MUST send Final response_format should be only JSON. Do not use ```json ticks
+&lt;/Instruction&gt;
+</content>
+        <inputs>
+            <apiName>FileData</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>FileData</masterLabel>
+            <referenceName>Input:FileData</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultGPT4Omni</primaryModel>
+        <status>Published</status>
+        <versionNumber>1</versionNumber>
+    </templateVersions>
+    <type>einstein_gpt__flex</type>
+    <visibility>Global</visibility>
+</GenAiPromptTemplate>

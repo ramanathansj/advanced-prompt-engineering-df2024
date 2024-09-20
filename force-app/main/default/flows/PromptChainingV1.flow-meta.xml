@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <actionCalls>
+        <description>Invoke a PDF extraction prompt</description>
+        <name>Call_Gemini_Prompt</name>
+        <label>Step 1 - Call PDF Extraction Prompt (Gemini)</label>
+        <locationX>176</locationX>
+        <locationY>242</locationY>
+        <actionName>GeminiPromptHandlerV1</actionName>
+        <actionType>apex</actionType>
+        <connector>
+            <targetReference>Step_2_Call_Salesforce_Prompt</targetReference>
+        </connector>
+        <dataTypeMappings>
+            <typeName>T__files</typeName>
+            <typeValue>ContentVersion</typeValue>
+        </dataTypeMappings>
+        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
+        <inputParameters>
+            <name>files</name>
+            <value>
+                <elementReference>Get_PDF_Files</elementReference>
+            </value>
+        </inputParameters>
+        <nameSegment>GeminiPromptHandlerV1</nameSegment>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+        <versionSegment>1</versionSegment>
+    </actionCalls>
+    <actionCalls>
+        <description>Call Salesforce Prompt</description>
+        <name>Step_2_Call_Salesforce_Prompt</name>
+        <label>Step 2 - Classify Invoice Lines Prompt (Salesforce)</label>
+        <locationX>176</locationX>
+        <locationY>350</locationY>
+        <actionName>PromptChainingTemplateV1</actionName>
+        <actionType>generatePromptResponse</actionType>
+        <connector>
+            <targetReference>Step_3_Validation_Prompt</targetReference>
+        </connector>
+        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
+        <inputParameters>
+            <name>Input:FileData</name>
+            <value>
+                <elementReference>Call_Gemini_Prompt.invoiceStr</elementReference>
+            </value>
+        </inputParameters>
+        <nameSegment>PromptChainingTemplateV1</nameSegment>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+        <versionSegment>1</versionSegment>
+    </actionCalls>
+    <actionCalls>
+        <description>Step 3 - Validation Prompt</description>
+        <name>Step_3_Validation_Prompt</name>
+        <label>Step 3 - Validation Prompt (Salesforce)</label>
+        <locationX>176</locationX>
+        <locationY>458</locationY>
+        <actionName>Invoice_Validation_Prompt_V1</actionName>
+        <actionType>generatePromptResponse</actionType>
+        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
+        <inputParameters>
+            <name>Input:InvoiceResponse</name>
+            <value>
+                <elementReference>Step_2_Call_Salesforce_Prompt.promptResponse</elementReference>
+            </value>
+        </inputParameters>
+        <nameSegment>Invoice_Validation_Prompt_V1</nameSegment>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+        <versionSegment>1</versionSegment>
+    </actionCalls>
+    <apiVersion>61.0</apiVersion>
+    <description>Prompt Chaining Example</description>
+    <environments>Default</environments>
+    <interviewLabel>PromptChainingV1 {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>PromptChainingV1</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <recordLookups>
+        <name>Get_PDF_Files</name>
+        <label>Get PDF Files</label>
+        <locationX>176</locationX>
+        <locationY>134</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Call_Gemini_Prompt</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Title</field>
+            <operator>Contains</operator>
+            <value>
+                <stringValue>Computer1</stringValue>
+            </value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>ContentVersion</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <start>
+        <locationX>50</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Get_PDF_Files</targetReference>
+        </connector>
+    </start>
+    <status>Draft</status>
+</Flow>

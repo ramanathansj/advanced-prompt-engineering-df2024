@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GenAiPromptTemplate xmlns="http://soap.sforce.com/2006/04/metadata">
+    <activeVersion>2</activeVersion>
+    <description>Invoice Validation Prompt V1</description>
+    <developerName>Invoice_Validation_Prompt_V1</developerName>
+    <masterLabel>Invoice Validation Prompt V1</masterLabel>
+    <templateVersions>
+        <content>#### Instruction ####
+- Your role as data validation program is to analyze provided `&lt;InputData&gt;`  as valid Success or Failure response solely base on provided data only. 
+- You must answer the `&lt;Question&gt;` solely based on information provided in `&lt;InputData&gt;` data field only.
+- ** You MUST send final response_format should be only in JSON **.
+
+
+***** InputData Validation Examples *****
+#### Example 1 (Valid): ####
+{
+ &quot;Status&quot; : &quot;Completed&quot;,
+ &quot;Exception&quot; : &quot;&quot;,
+ &quot;invoice_lines&quot;: [
+ {
+ &quot;Product&quot;: &quot;Gaming PC Computer RX 580 8GB Ryzen 5 2x8GB Ram&quot;, 
+ &quot;Quantity&quot;: 2.00,
+ &quot;UOM&quot;: &quot;each&quot;,
+ &quot;Net_Price&quot;: 400.00, 
+ &quot;Tax_Rate&quot;: 10, 
+ &quot;Total&quot;: 880.00, 
+ &quot;Category&quot; : &quot;Computer &amp; Gaming&quot;
+ }
+]
+}
+Explanation: This is valid response because &quot;Status&quot; value is &quot;Completed&quot;, &quot;Exception&quot; is blank and  &quot;invoice_lines&quot; array is not contains values with with properly formatted data
+
+#### Example 2 (Valid): ####
+{
+ &quot;Status&quot; : &quot;Completed&quot;,
+ &quot;Exception&quot; : &quot;&quot;,
+ &quot;invoice_lines&quot;: [
+ {
+ &quot;Product&quot;: &quot;Cloud Storage Unlimited Access Per Year&quot;, 
+ &quot;Quantity&quot;: 2.00,
+ &quot;UOM&quot;: &quot;each&quot;,
+ &quot;Net_Price&quot;: 400.00, 
+ &quot;Tax_Rate&quot;: 10, 
+ &quot;Total&quot;: 880.00, 
+ &quot;Category&quot; : &quot;Subscription&quot;
+ }
+]
+}
+Explanation: This is valid response because &quot;Status&quot; value is &quot;Completed&quot;, &quot;Exception&quot; is blank and  &quot;invoice_lines&quot; array is not contains values with with properly formatted data
+
+#### Example 3 (InValid): ####
+{ &quot;Status&quot;: &quot;Failed&quot;, &quot;Exception&quot;: &quot;InputData does not contain invoice_lines array.&quot;, &quot;invoice_lines&quot;: [] }
+
+Explanation: This is not a valid response because &quot;Status&quot; value is &quot;Failed&quot;, &quot;Exception&quot; is not blank and  &quot;invoice_lines&quot; array contains no elements.
+
+#### Example 4 (InValid): ####
+QgaHR0cDovL3d3dy5yZXBvcnRsYWIuY29tCjEgJVBERi0xLjQKJZOMi54gUmVwb3J0TGFiIEdlbmVyYXRlZCBQREYgZG9jdW1lbnVBERi0xLjQKJZOMi54g
+
+{ &quot;Status&quot;: &quot;Failed&quot;, &quot;Exception&quot;: &quot;System unhandled exception, review logs.&quot;, &quot;invoice_lines&quot;: [] }
+
+Explanation: This is not a valid response because &quot;Status&quot; value is &quot;Failed&quot;, &quot;Exception&quot; is not blank and  &quot;invoice_lines&quot; array contains no elements.
+
+
+##### Excepted response JSON Format #####
+
+{
+ &quot;Validation&quot; : &quot;True&quot; | &quot;False&quot;,
+&quot;Exception&quot; : Copy exception message from `&lt;InputData&gt;`
+}
+
+&lt;InputData&gt;
+{!$Input:InvoiceResponse}
+&lt;/InputData&gt;
+
+&lt;Question&gt;
+1. Is &lt;InputData&gt; ValidFormat ?
+2. Is &lt;InputData&gt; contains invoice_lines array?
+3. Populate JSON response based on results of 1 &amp; 2 questions. 
+&lt;/Question&gt;
+
+&lt;Instruction&gt;
+- You MUST send Final response_format should be only JSON. Do not use ```json ticks
+&lt;/Instruction&gt;
+</content>
+        <inputs>
+            <apiName>InvoiceResponse</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>InvoiceResponse</masterLabel>
+            <referenceName>Input:InvoiceResponse</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultGPT4Omni</primaryModel>
+        <status>Published</status>
+        <versionNumber>1</versionNumber>
+    </templateVersions>
+    <templateVersions>
+        <content>#### Instruction ####
+- Your role as data validation program is to analyze provided `&lt;InputData&gt;`  as valid Success or Failure response solely base on provided data only. 
+- You must answer the `&lt;Question&gt;` solely based on information provided in `&lt;InputData&gt;` data field only.
+- ** You MUST send final response_format should be only in JSON **.
+
+
+***** InputData Validation Examples *****
+#### Example 1 (Valid): ####
+{&quot;ApprovalStatus&quot;:&quot;Approved&quot;,&quot;Exception&quot;:&quot;&quot;,&quot;ProductValiation&quot;:&quot;True&quot;,&quot;AmountValidation&quot;:&quot;True&quot;,&quot;InvoiceValidation&quot;:&quot;True&quot;,&quot;AccountValidation&quot;:&quot;True&quot;,&quot;InvoiceData&quot;:{&quot;invoice_lines&quot;:[{&quot;Description&quot;:&quot;Coffee Machine&quot;,&quot;Quantity&quot;:10,&quot;Unit of Measure&quot;:&quot;each&quot;,&quot;Unit Price&quot;:&quot;1000&quot;,&quot;Net price&quot;:10000,&quot;SKU&quot;:&quot;IL-100&quot;}],&quot;supplier_details&quot;:{&quot;name&quot;:&quot;Omega, Inc.&quot;,&quot;address&quot;:&quot;641 Newton Views\nTapiachester, NY 95259&quot;,&quot;tax_id&quot;:&quot;965-78-1117&quot;},&quot;client_details&quot;:{&quot;name&quot;:&quot;Simpson, Barton and Barnes&quot;,&quot;address&quot;:&quot;0855 Chen Junctions\nSanchezshire, MT 77237&quot;,&quot;tax_id&quot;:&quot;945-79-5353&quot;},&quot;invoice_number&quot;:&quot;23876575&quot;,&quot;invoice_date&quot;:&quot;07/11/2024&quot;,&quot;Total Amount&quot;:&quot;30000.0&quot;,&quot;SalesOrder&quot;:&quot;O-123456&quot;}}
+
+Explanation: This is valid response because &quot;ApprovalStatus&quot; value is &quot;Approved&quot;, &quot;Exception&quot; is blank and  &quot;invoice_lines&quot; array is not contains values with with properly formatted data
+
+#### Example 2 (Valid): ####
+{&quot;ApprovalStatus&quot;:&quot;Approved&quot;,&quot;Exception&quot;:&quot;&quot;,&quot;ProductValiation&quot;:&quot;True&quot;,&quot;AmountValidation&quot;:&quot;True&quot;,&quot;InvoiceValidation&quot;:&quot;True&quot;,&quot;AccountValidation&quot;:&quot;True&quot;,&quot;InvoiceData&quot;:{&quot;invoice_lines&quot;:[{&quot;Description&quot;:&quot;Laptop&quot;,&quot;Quantity&quot;:20,&quot;Unit of Measure&quot;:&quot;each&quot;,&quot;Unit Price&quot;:&quot;1000&quot;,&quot;Net price&quot;:20000,&quot;SKU&quot;:&quot;BL-100&quot;}],&quot;supplier_details&quot;:{&quot;name&quot;:&quot;Beta, Inc.&quot;,&quot;address&quot;:&quot;641 Newton Views\nTapiachester, NY 95259&quot;,&quot;tax_id&quot;:&quot;965-78-1117&quot;},&quot;client_details&quot;:{&quot;name&quot;:&quot;ABC Computers&quot;,&quot;address&quot;:&quot;0855 Chen Junctions\nSanchezshire, MT 77237&quot;,&quot;tax_id&quot;:&quot;945-79-5353&quot;},&quot;invoice_number&quot;:&quot;33876575&quot;,&quot;invoice_date&quot;:&quot;07/11/2024&quot;,&quot;Total Amount&quot;:&quot;20000.0&quot;,&quot;SalesOrder&quot;:&quot;O-7890&quot;}}
+
+Explanation: This is valid response because &quot;ApprovalStatus&quot; value is &quot;Approved&quot;, &quot;Exception&quot; is blank and  &quot;invoice_lines&quot; array is not contains values with with properly formatted data
+
+#### Example 3 (InValid): ####
+{&quot;ApprovalStatus&quot;:&quot;Rejected&quot;,&quot;Exception&quot;:&quot;Sales order quantity mismatch for Coffee Machine.&quot;,&quot;ProductValidation&quot;:&quot;False&quot;,&quot;AmountValidation&quot;:&quot;True&quot;,&quot;InvoiceValidation&quot;:&quot;True&quot;,&quot;AccountValidation&quot;:&quot;True&quot;,&quot;InvoiceData&quot;:{&quot;invoice_lines&quot;:[{&quot;Description&quot;:&quot;Coffee Machine&quot;,&quot;Quantity&quot;:10,&quot;Unit of Measure&quot;:&quot;each&quot;,&quot;Unit Price&quot;:&quot;1000&quot;,&quot;Net price&quot;:10000,&quot;SKU&quot;:&quot;IL-100&quot;}],&quot;supplier_details&quot;:{&quot;name&quot;:&quot;Omega, Inc.&quot;,&quot;address&quot;:&quot;641 Newton Views\nTapiachester, NY 95259&quot;,&quot;tax_id&quot;:&quot;965-78-1117&quot;},&quot;client_details&quot;:{&quot;name&quot;:&quot;Simpson, Barton and Barnes&quot;,&quot;address&quot;:&quot;0855 Chen Junctions\nSanchezshire, MT 77237&quot;,&quot;tax_id&quot;:&quot;945-79-5353&quot;},&quot;invoice_number&quot;:&quot;23876575&quot;,&quot;invoice_date&quot;:&quot;07/11/2024&quot;,&quot;Total Amount&quot;:&quot;30000.0&quot;,&quot;SalesOrder&quot;:&quot;O-123456&quot;}}
+Explanation: This is not a valid response because &quot;ApprovalStatus&quot; value is &quot;Rejected&quot;, &quot;Exception&quot; is not blank
+
+#### Example 4 (InValid): ####
+QgaHR0cDovL3d3dy5yZXBvcnRsYWIuY29tCjEgJVBERi0xLjQKJZOMi54gUmVwb3J0TGFiIEdlbmVyYXRlZCBQREYgZG9jdW1lbnVBERi0xLjQKJZOMi54g
+
+{&quot;ApprovalStatus&quot;:&quot;Rejected&quot;,&quot;Exception&quot;:&quot;Sales order quantity mismatch for Coffee Machine.&quot;,&quot;ProductValidation&quot;:&quot;False&quot;,&quot;AmountValidation&quot;:&quot;True&quot;,&quot;InvoiceValidation&quot;:&quot;True&quot;,&quot;AccountValidation&quot;:&quot;True&quot;,&quot;InvoiceData&quot;:{&quot;invoice_lines&quot;:[]}}
+
+Explanation: This is not a valid response because &quot;ApprovalStatus&quot; value is &quot;Rejected&quot;, &quot;Exception&quot; is not blank and  &quot;invoice_lines&quot; array contains no elements.
+
+
+##### Excepted response JSON Format #####
+
+{
+ &quot;Validation&quot; : &quot;True&quot; | &quot;False&quot;,
+&quot;Exception&quot; : Copy exception message from `&lt;InputData&gt;`
+&quot;InvoiceData&quot; : &quot;Copy &apos;InvoiceData&apos; array values&quot;
+}
+
+&lt;InputData&gt;
+{!$Input:InvoiceResponse}
+&lt;/InputData&gt;
+
+&lt;Question&gt;
+1. Is &lt;InputData&gt; ValidFormat ?
+2. Is &lt;InputData&gt; contains invoice_lines array?
+3. Populate JSON response based on results of 1 &amp; 2 questions. 
+&lt;/Question&gt;
+
+&lt;Instruction&gt;
+- You MUST send Final response_format should be only JSON. Do not use ```json ticks
+&lt;/Instruction&gt;
+</content>
+        <inputs>
+            <apiName>InvoiceResponse</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>InvoiceResponse</masterLabel>
+            <referenceName>Input:InvoiceResponse</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultGPT4Omni</primaryModel>
+        <status>Published</status>
+        <versionNumber>2</versionNumber>
+    </templateVersions>
+    <templateVersions>
+        <content>#### Instruction ####
+- Your role as data validation program is to analyze provided `&lt;InputData&gt;`  as valid Success or Failure response solely base on provided data only. 
+- You must answer the `&lt;Question&gt;` solely based on information provided in `&lt;InputData&gt;` data field only.
+- ** You MUST send final response_format should be only in JSON **.
+
+
+***** InputData Validation Examples *****
+#### Example 1 (Valid): ####
+{&quot;ApprovalStatus&quot;:&quot;Approved&quot;,&quot;Exception&quot;:&quot;&quot;,&quot;ProductValiation&quot;:&quot;True&quot;,&quot;AmountValidation&quot;:&quot;True&quot;,&quot;InvoiceValidation&quot;:&quot;True&quot;,&quot;AccountValidation&quot;:&quot;True&quot;,&quot;InvoiceData&quot;:{&quot;invoice_lines&quot;:[{&quot;Description&quot;:&quot;Coffee Machine&quot;,&quot;Quantity&quot;:10,&quot;Unit of Measure&quot;:&quot;each&quot;,&quot;Unit Price&quot;:&quot;1000&quot;,&quot;Net price&quot;:10000,&quot;SKU&quot;:&quot;IL-100&quot;}],&quot;supplier_details&quot;:{&quot;name&quot;:&quot;Omega, Inc.&quot;,&quot;address&quot;:&quot;641 Newton Views\nTapiachester, NY 95259&quot;,&quot;tax_id&quot;:&quot;965-78-1117&quot;},&quot;client_details&quot;:{&quot;name&quot;:&quot;Simpson, Barton and Barnes&quot;,&quot;address&quot;:&quot;0855 Chen Junctions\nSanchezshire, MT 77237&quot;,&quot;tax_id&quot;:&quot;945-79-5353&quot;},&quot;invoice_number&quot;:&quot;23876575&quot;,&quot;invoice_date&quot;:&quot;07/11/2024&quot;,&quot;Total Amount&quot;:&quot;30000.0&quot;,&quot;SalesOrder&quot;:&quot;O-123456&quot;}}
+
+Explanation: This is valid response because &quot;ApprovalStatus&quot; value is &quot;Approved&quot;, &quot;Exception&quot; is blank and  &quot;invoice_lines&quot; array is not contains values with with properly formatted data
+
+#### Example 2 (Valid): ####
+{&quot;ApprovalStatus&quot;:&quot;Approved&quot;,&quot;Exception&quot;:&quot;&quot;,&quot;ProductValiation&quot;:&quot;True&quot;,&quot;AmountValidation&quot;:&quot;True&quot;,&quot;InvoiceValidation&quot;:&quot;True&quot;,&quot;AccountValidation&quot;:&quot;True&quot;,&quot;InvoiceData&quot;:{&quot;invoice_lines&quot;:[{&quot;Description&quot;:&quot;Laptop&quot;,&quot;Quantity&quot;:20,&quot;Unit of Measure&quot;:&quot;each&quot;,&quot;Unit Price&quot;:&quot;1000&quot;,&quot;Net price&quot;:20000,&quot;SKU&quot;:&quot;BL-100&quot;}],&quot;supplier_details&quot;:{&quot;name&quot;:&quot;Beta, Inc.&quot;,&quot;address&quot;:&quot;641 Newton Views\nTapiachester, NY 95259&quot;,&quot;tax_id&quot;:&quot;965-78-1117&quot;},&quot;client_details&quot;:{&quot;name&quot;:&quot;ABC Computers&quot;,&quot;address&quot;:&quot;0855 Chen Junctions\nSanchezshire, MT 77237&quot;,&quot;tax_id&quot;:&quot;945-79-5353&quot;},&quot;invoice_number&quot;:&quot;33876575&quot;,&quot;invoice_date&quot;:&quot;07/11/2024&quot;,&quot;Total Amount&quot;:&quot;20000.0&quot;,&quot;SalesOrder&quot;:&quot;O-7890&quot;}}
+
+Explanation: This is valid response because &quot;ApprovalStatus&quot; value is &quot;Approved&quot;, &quot;Exception&quot; is blank and  &quot;invoice_lines&quot; array is not contains values with with properly formatted data
+
+#### Example 3 (InValid): ####
+{&quot;ApprovalStatus&quot;:&quot;Rejected&quot;,&quot;Exception&quot;:&quot;Sales order quantity mismatch for Coffee Machine.&quot;,&quot;ProductValidation&quot;:&quot;False&quot;,&quot;AmountValidation&quot;:&quot;True&quot;,&quot;InvoiceValidation&quot;:&quot;True&quot;,&quot;AccountValidation&quot;:&quot;True&quot;,&quot;InvoiceData&quot;:{&quot;invoice_lines&quot;:[{&quot;Description&quot;:&quot;Coffee Machine&quot;,&quot;Quantity&quot;:10,&quot;Unit of Measure&quot;:&quot;each&quot;,&quot;Unit Price&quot;:&quot;1000&quot;,&quot;Net price&quot;:10000,&quot;SKU&quot;:&quot;IL-100&quot;}],&quot;supplier_details&quot;:{&quot;name&quot;:&quot;Omega, Inc.&quot;,&quot;address&quot;:&quot;641 Newton Views\nTapiachester, NY 95259&quot;,&quot;tax_id&quot;:&quot;965-78-1117&quot;},&quot;client_details&quot;:{&quot;name&quot;:&quot;Simpson, Barton and Barnes&quot;,&quot;address&quot;:&quot;0855 Chen Junctions\nSanchezshire, MT 77237&quot;,&quot;tax_id&quot;:&quot;945-79-5353&quot;},&quot;invoice_number&quot;:&quot;23876575&quot;,&quot;invoice_date&quot;:&quot;07/11/2024&quot;,&quot;Total Amount&quot;:&quot;30000.0&quot;,&quot;SalesOrder&quot;:&quot;O-123456&quot;}}
+Explanation: This is not a valid response because &quot;ApprovalStatus&quot; value is &quot;Rejected&quot;, &quot;Exception&quot; is not blank
+
+#### Example 4 (InValid): ####
+QgaHR0cDovL3d3dy5yZXBvcnRsYWIuY29tCjEgJVBERi0xLjQKJZOMi54gUmVwb3J0TGFiIEdlbmVyYXRlZCBQREYgZG9jdW1lbnVBERi0xLjQKJZOMi54g
+
+{&quot;ApprovalStatus&quot;:&quot;Rejected&quot;,&quot;Exception&quot;:&quot;Sales order quantity mismatch for Coffee Machine.&quot;,&quot;ProductValidation&quot;:&quot;False&quot;,&quot;AmountValidation&quot;:&quot;True&quot;,&quot;InvoiceValidation&quot;:&quot;True&quot;,&quot;AccountValidation&quot;:&quot;True&quot;,&quot;InvoiceData&quot;:{&quot;invoice_lines&quot;:[]}}
+
+Explanation: This is not a valid response because &quot;ApprovalStatus&quot; value is &quot;Rejected&quot;, &quot;Exception&quot; is not blank and  &quot;invoice_lines&quot; array contains no elements.
+
+
+##### Excepted response JSON Format #####
+
+{
+ &quot;Validation&quot; : &quot;True&quot; | &quot;False&quot;,
+&quot;Exception&quot; : Copy exception message from `&lt;InputData&gt;`
+&quot;InvoiceData&quot; : &quot;Copy &apos;InvoiceData&apos; array values&quot;
+}
+
+&lt;InputData&gt;
+{!$Input:InvoiceResponse}
+&lt;/InputData&gt;
+
+&lt;Question&gt;
+1. Is &lt;InputData&gt; ValidFormat ?
+2. Is &lt;InputData&gt; contains invoice_lines array?
+3. Populate JSON response based on results of 1 &amp; 2 questions. 
+&lt;/Question&gt;
+
+&lt;Instruction&gt;
+- You MUST send Final response_format should be only JSON. Do not use ```json ticks
+&lt;/Instruction&gt;
+</content>
+        <inputs>
+            <apiName>InvoiceResponse</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>InvoiceResponse</masterLabel>
+            <referenceName>Input:InvoiceResponse</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultBedrockAnthropicClaude3Haiku</primaryModel>
+        <status>Draft</status>
+        <versionNumber>3</versionNumber>
+    </templateVersions>
+    <type>einstein_gpt__flex</type>
+    <visibility>Global</visibility>
+</GenAiPromptTemplate>

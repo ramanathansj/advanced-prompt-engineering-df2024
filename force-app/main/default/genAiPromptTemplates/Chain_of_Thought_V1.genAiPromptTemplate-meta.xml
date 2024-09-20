@@ -1,0 +1,652 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GenAiPromptTemplate xmlns="http://soap.sforce.com/2006/04/metadata">
+    <activeVersion>6</activeVersion>
+    <description>Chain of Thought V2</description>
+    <developerName>Chain_of_Thought_V1</developerName>
+    <masterLabel>Chain of Thought V1</masterLabel>
+    <templateVersions>
+        <content>#### Instruction ####
+- Your role as invoice expert is to analyze Sales Order, Invoices document in JSON format and perform two way matching between them . 
+- You need to apply chain of thought reasoning —thinking step by step— to apply logical and arithmetic reasoning and successfully perform the task solely based on `&lt;InputData&gt;` only.
+- ** Your final response_format must be only in JSON **.
+
+##### Calculation Examples ####
+#### InvoiceData ####
+
+{
+  &quot;invoice_lines&quot;: [
+    {
+      &quot;Product&quot;: &quot;Coffee Machine&quot;,
+      &quot;Quantity&quot;: 10,
+      &quot;Unit of Measure&quot;: &quot;each&quot;,
+      &quot;Unit Price&quot;:&quot;1000&quot;,
+      &quot;Net price&quot;: 10000,
+      &quot;SKU&quot;: &quot;IL-100&quot;
+    },
+    {
+      &quot;Product&quot;: &quot;Laptop&quot;,
+      &quot;Quantity&quot;: 20,
+      &quot;Unit of Measure&quot;: &quot;each&quot;,
+      &quot;Unit Price&quot;:&quot;1000&quot;,
+      &quot;Net price&quot;: 20000,
+      &quot;SKU&quot;: &quot;BL-100&quot;
+    }
+  ],
+  &quot;supplier_details&quot;: {
+    &quot;name&quot;: &quot;Omega, Inc.&quot;,
+    &quot;address&quot;: &quot;641 Newton Views\nTapiachester, NY 95259&quot;,
+    &quot;tax_id&quot;: &quot;965-78-1117&quot;
+  },
+  &quot;client_details&quot;: {
+    &quot;name&quot;: &quot;Simpson, Barton and Barnes&quot;,
+    &quot;address&quot;: &quot;0855 Chen Junctions\nSanchezshire, MT 77237&quot;,
+    &quot;tax_id&quot;: &quot;945-79-5353&quot;
+  },
+  &quot;invoice_number&quot;: &quot;23876575&quot;,
+  &quot;invoice_date&quot;: &quot;07/11/2024&quot;,
+  &quot;Total Amount&quot;: &quot;30000.0&quot;,
+  &quot;SalesOrder&quot; : &quot;O-123456&quot;
+}
+
+##### SalesOrderData #####
+[
+  {
+    &quot;Id&quot;: &quot;801a5000015t4aRAAQ&quot;,
+    &quot;TotalAmount&quot;: 30000,
+    &quot;OrderNumber&quot;: &quot;O-123456&quot;,
+    &quot;Account&quot;: {
+      &quot;Name&quot;: &quot;Omega, Inc.&quot;,
+      &quot;External_ID__c&quot;: &quot;965-78-1117&quot;
+    },
+    &quot;blng__BillingAccount__c&quot;: {
+      &quot;Name&quot;: &quot;Simpson, Barton and Barnes&quot;,
+      &quot;External_ID__c&quot;: &quot;945-79-5353&quot;
+    },
+    &quot;OrderItems&quot;: {
+      &quot;records&quot;: [
+        {
+          &quot;Id&quot;: &quot;802a5000003abNtAAI&quot;,
+          &quot;Quantity&quot;: 10,
+          &quot;TotalPrice&quot;: 10000,
+          &quot;UnitPrice&quot;: 1000,
+          &quot;Product2&quot;: {
+            &quot;Name&quot;: &quot;Coffee Machine&quot;,
+            &quot;ProductCode&quot;: &quot;IL-100&quot;
+          }
+        },
+        {
+          &quot;Id&quot;: &quot;802a5000003abNuAAI&quot;,
+          &quot;Quantity&quot;: 20,
+          &quot;TotalPrice&quot;: 20000,
+          &quot;UnitPrice&quot;: 1000,
+          &quot;Product2&quot;: {
+            &quot;Name&quot;: &quot;Laptop&quot;,
+            &quot;ProductCode&quot;: &quot;BL-100&quot;
+          }
+        }
+      ]
+    }
+  }
+]
+Validatoin Steps:
+1. Account Validation:
+* Extract &quot;tax_id&quot; from &quot;InvoiceData&quot; section &quot;supplier_details&quot; and Try to match it with &quot;External_Id__c&quot; in &quot;SalesOrderData&quot; section field value.
+* If they match set &quot;AccountValidation&quot; : &quot;True&quot;, otherwise set &quot;AccountValidation&quot; : &quot;False&quot; 
+
+2. Invoice Total Validation:
+* For each &quot;invoice_lines&quot; array element in &quot;InvoiceData&quot; perform the following validation:
+- Calulate &quot;Quantity&quot; * &quot;Unit Price&quot; and make sure it matches &quot;Net Price&quot;
+* Sum all &quot;Net Price&quot; value in &quot;InvoiceData&quot; and make sure it matches &quot;Total Amount&quot;
+* If all valiation passes then set &quot;InvoiceValidation&quot; : &quot;True&quot;, otherwise set &quot;InvoiceValidation&quot; : &quot;False&quot;
+
+3. Amount Validation:
+*  Sum all &quot;Net Price&quot; in &quot;InvoiceData&quot; and make sure it matches SalesOrderData &quot;TotalAmount&quot; value
+* If the vlaidation passes then set &quot;AmountValidation&quot;:&quot;True&quot;, otherwise set &quot;AmountValidation&quot;: &quot;False&quot;
+
+4.Sales Order Validation:
+* For each line in &quot;invoice_lines&quot; array in &quot;InvoiceData&quot; do the following:
+- Match &quot;SKU&quot; value with &quot;Product2.ProductCode&quot; value in &quot;SalesOrderData&quot;
+- Match &quot;Quantity&quot; value with  &quot;Quantity&quot; value in &quot;SalesOrderData&quot;
+* &quot;SalesOrder&quot; field value in &quot;InvoiceData&quot; should match &quot;OrderNumber&quot; field in &quot;SalesOrderData&quot;
+* If all validation passes then set &quot;SalesOrderValidation&quot;: &quot;True&quot;, otherwise set &quot;SalesOrderValidation&quot;: &quot;False&quot;
+
+5. Approval Status Validation: 
+* If all the above valition passes then you must approve invoice and set &quot;ApprovalStatus&quot;: &quot;Approved&quot;, otherwise set &quot;ApprovalStatus&quot;: &quot;Rejected&quot;
+
+##### Excepted response JSON Format #####
+
+{
+ &quot;ApprovalStatus&quot; : &quot;Approved&quot; | &quot;Rejected&quot;
+ &quot;Exception&quot; : &quot;Capture and show applicable error messages&quot;,
+ &quot;ProductValiation&quot; : &quot;True&quot; | &quot;False&quot;,
+ &quot;AmountValidation&quot; : &quot;True&quot; | &quot;False&quot;,
+ &quot;InvoiceValidation&quot; : &quot;True&quot; | &quot;False&quot;,
+ &quot;AccountValidation&quot; : &quot;True&quot; | &quot;False&quot;
+
+}
+
+&lt;InvoiceData&gt;
+{!$Input:InvoiceData}
+&lt;/InvoiceData&gt;
+&lt;SalesOrderData&gt;
+{!$Input:SalesOrderData}
+&lt;/SalesOrderData&gt;
+
+&lt;Question&gt;
+Perform all validation rules and return final response as JSON
+&lt;/Question&gt;
+
+&lt;Instruction&gt;
+- You MUST send Final response_format should be only JSON. Do not use ```json ticks
+&lt;/Instruction&gt;
+</content>
+        <inputs>
+            <apiName>InvoiceData</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>InvoiceData</masterLabel>
+            <referenceName>Input:InvoiceData</referenceName>
+            <required>true</required>
+        </inputs>
+        <inputs>
+            <apiName>SalesOrderData</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>SalesOrderData</masterLabel>
+            <referenceName>Input:SalesOrderData</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultGPT4Omni</primaryModel>
+        <status>Published</status>
+        <versionNumber>1</versionNumber>
+    </templateVersions>
+    <templateVersions>
+        <content>#### Instruction ####
+- Your role as invoice expert is to analyze Sales Order, Invoices document in JSON format and perform two way matching between them . 
+- You need to apply chain of thought reasoning —thinking step by step— to apply logical and arithmetic reasoning and successfully perform the task solely based on `&lt;InputData&gt;` only.
+- ** Your final response_format must be only in JSON **.
+
+##### Calculation Examples ####
+#### InvoiceData ####
+
+{
+  &quot;invoice_lines&quot;: [
+    {
+      &quot;Product&quot;: &quot;Coffee Machine&quot;,
+      &quot;Quantity&quot;: 10,
+      &quot;Unit of Measure&quot;: &quot;each&quot;,
+      &quot;Unit Price&quot;:&quot;1000&quot;,
+      &quot;Net price&quot;: 10000,
+      &quot;SKU&quot;: &quot;IL-100&quot;
+    },
+    {
+      &quot;Product&quot;: &quot;Laptop&quot;,
+      &quot;Quantity&quot;: 20,
+      &quot;Unit of Measure&quot;: &quot;each&quot;,
+      &quot;Unit Price&quot;:&quot;1000&quot;,
+      &quot;Net price&quot;: 20000,
+      &quot;SKU&quot;: &quot;BL-100&quot;
+    }
+  ],
+  &quot;supplier_details&quot;: {
+    &quot;name&quot;: &quot;Omega, Inc.&quot;,
+    &quot;address&quot;: &quot;641 Newton Views\nTapiachester, NY 95259&quot;,
+    &quot;tax_id&quot;: &quot;965-78-1117&quot;
+  },
+  &quot;client_details&quot;: {
+    &quot;name&quot;: &quot;Simpson, Barton and Barnes&quot;,
+    &quot;address&quot;: &quot;0855 Chen Junctions\nSanchezshire, MT 77237&quot;,
+    &quot;tax_id&quot;: &quot;945-79-5353&quot;
+  },
+  &quot;invoice_number&quot;: &quot;23876575&quot;,
+  &quot;invoice_date&quot;: &quot;07/11/2024&quot;,
+  &quot;Total Amount&quot;: &quot;30000.0&quot;,
+  &quot;SalesOrder&quot; : &quot;O-123456&quot;
+}
+
+##### SalesOrderData #####
+[
+  {
+    &quot;Id&quot;: &quot;801a5000015t4aRAAQ&quot;,
+    &quot;TotalAmount&quot;: 30000,
+    &quot;OrderNumber&quot;: &quot;O-123456&quot;,
+    &quot;Account&quot;: {
+      &quot;Name&quot;: &quot;Omega, Inc.&quot;,
+      &quot;External_ID__c&quot;: &quot;965-78-1117&quot;
+    },
+    &quot;blng__BillingAccount__c&quot;: {
+      &quot;Name&quot;: &quot;Simpson, Barton and Barnes&quot;,
+      &quot;External_ID__c&quot;: &quot;945-79-5353&quot;
+    },
+    &quot;OrderItems&quot;: {
+      &quot;records&quot;: [
+        {
+          &quot;Id&quot;: &quot;802a5000003abNtAAI&quot;,
+          &quot;Quantity&quot;: 10,
+          &quot;TotalPrice&quot;: 10000,
+          &quot;UnitPrice&quot;: 1000,
+          &quot;Product2&quot;: {
+            &quot;Name&quot;: &quot;Coffee Machine&quot;,
+            &quot;ProductCode&quot;: &quot;IL-100&quot;
+          }
+        },
+        {
+          &quot;Id&quot;: &quot;802a5000003abNuAAI&quot;,
+          &quot;Quantity&quot;: 20,
+          &quot;TotalPrice&quot;: 20000,
+          &quot;UnitPrice&quot;: 1000,
+          &quot;Product2&quot;: {
+            &quot;Name&quot;: &quot;Laptop&quot;,
+            &quot;ProductCode&quot;: &quot;BL-100&quot;
+          }
+        }
+      ]
+    }
+  }
+]
+Validatoin Steps:
+1. Account Validation:
+* Extract &quot;tax_id&quot; from &quot;InvoiceData&quot; section &quot;supplier_details&quot; and Try to match it with &quot;External_Id__c&quot; in &quot;SalesOrderData&quot; section field value.
+* If they match set &quot;AccountValidation&quot; : &quot;True&quot;, otherwise set &quot;AccountValidation&quot; : &quot;False&quot; 
+
+2. Invoice Total Validation:
+* For each &quot;invoice_lines&quot; array element in &quot;InvoiceData&quot; perform the following validation:
+- Calulate &quot;Quantity&quot; * &quot;Unit Price&quot; and make sure it matches &quot;Net Price&quot;
+* Sum all &quot;Net Price&quot; value in &quot;InvoiceData&quot; and make sure it matches &quot;Total Amount&quot;
+* If all valiation passes then set &quot;InvoiceValidation&quot; : &quot;True&quot;, otherwise set &quot;InvoiceValidation&quot; : &quot;False&quot;
+
+3. Amount Validation:
+*  Sum all &quot;Net Price&quot; in &quot;InvoiceData&quot; and make sure it matches SalesOrderData &quot;TotalAmount&quot; value
+* If the vlaidation passes then set &quot;AmountValidation&quot;:&quot;True&quot;, otherwise set &quot;AmountValidation&quot;: &quot;False&quot;
+
+4.Sales Order Validation:
+* For each line in &quot;invoice_lines&quot; array in &quot;InvoiceData&quot; do the following:
+- Match &quot;SKU&quot; value with &quot;Product2.ProductCode&quot; value in &quot;SalesOrderData&quot;
+- Match &quot;Quantity&quot; value with  &quot;Quantity&quot; value in &quot;SalesOrderData&quot;
+* &quot;SalesOrder&quot; field value in &quot;InvoiceData&quot; should match &quot;OrderNumber&quot; field in &quot;SalesOrderData&quot;
+* If all validation passes then set &quot;SalesOrderValidation&quot;: &quot;True&quot;, otherwise set &quot;SalesOrderValidation&quot;: &quot;False&quot;
+
+5. Approval Status Validation: 
+* If all the above valition passes then you must approve invoice and set &quot;ApprovalStatus&quot;: &quot;Approved&quot;, otherwise set &quot;ApprovalStatus&quot;: &quot;Rejected&quot;
+
+##### Excepted response JSON Format #####
+
+{
+ &quot;ApprovalStatus&quot; : &quot;Approved&quot; | &quot;Rejected&quot;
+ &quot;Exception&quot; : &quot;Capture and show applicable error messages&quot;,
+ &quot;ProductValiation&quot; : &quot;True&quot; | &quot;False&quot;,
+ &quot;AmountValidation&quot; : &quot;True&quot; | &quot;False&quot;,
+ &quot;InvoiceValidation&quot; : &quot;True&quot; | &quot;False&quot;,
+ &quot;AccountValidation&quot; : &quot;True&quot; | &quot;False&quot;,
+&quot;InvoiceData&quot; : &quot;Copy &apos;InvoiceData&apos; array data details here &quot;
+
+}
+
+&lt;InvoiceData&gt;
+{!$Input:InvoiceData}
+&lt;/InvoiceData&gt;
+&lt;SalesOrderData&gt;
+{!$Input:SalesOrderData}
+&lt;/SalesOrderData&gt;
+
+&lt;Question&gt;
+Perform all validation rules and return final response as JSON
+&lt;/Question&gt;
+
+&lt;Instruction&gt;
+- You MUST send Final response_format should be only JSON. Do not use ```json ticks
+&lt;/Instruction&gt;
+</content>
+        <inputs>
+            <apiName>InvoiceData</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>InvoiceData</masterLabel>
+            <referenceName>Input:InvoiceData</referenceName>
+            <required>true</required>
+        </inputs>
+        <inputs>
+            <apiName>SalesOrderData</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>SalesOrderData</masterLabel>
+            <referenceName>Input:SalesOrderData</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultGPT4Omni</primaryModel>
+        <status>Published</status>
+        <versionNumber>2</versionNumber>
+    </templateVersions>
+    <templateVersions>
+        <content>#### Instruction ####
+- Your role as invoice expert is to analyze Sales Order, Invoices document in JSON format and perform two way matching between them . 
+- You need to apply chain of thought reasoning —thinking step by step— to apply logical and arithmetic reasoning and successfully perform the task solely based on `&lt;InputData&gt;` only.
+- ** Your final response_format must be only in JSON **.
+
+##### Calculation Examples ####
+#### InvoiceData ####
+{&quot;invoice_lines&quot;:[{&quot;Product&quot;:&quot;Coffee Machine&quot;,&quot;Quantity&quot;:10,&quot;UoM&quot;:&quot;each&quot;,&quot;Unit Price&quot;:&quot;1000&quot;,&quot;TotalPrice&quot;:10000,&quot;SKU&quot;:&quot;IL-100&quot;},{&quot;Product&quot;:&quot;Laptop&quot;,&quot;Quantity&quot;:20,&quot;UoM&quot;:&quot;each&quot;,&quot;Unit Price&quot;:&quot;1000&quot;,&quot;TotalPrice&quot;:20000,&quot;SKU&quot;:&quot;BL-100&quot;}],&quot;Supplier&quot;:{&quot;Name&quot;:&quot;Omega, Inc.&quot;,&quot;Address&quot;:&quot;641 Newton Views\nTapiachester, NY 95259&quot;,&quot;TaxId&quot;:&quot;965-78-1117&quot;},&quot;Client&quot;:{&quot;Name&quot;:&quot;Simpson, Barton and Barnes&quot;,&quot;Address&quot;:&quot;0855 Chen Junctions\nSanchezshire, MT 77237&quot;,&quot;TaxId&quot;:&quot;945-79-5353&quot;},&quot;InvoiceNo&quot;:&quot;23876575&quot;,&quot;InvoiceDate&quot;:&quot;07/11/2024&quot;,&quot;SubTotal&quot;:&quot;30000.0&quot;,&quot;SalesOrderNo&quot;:&quot;O-123456&quot;}
+
+##### SalesOrderData #####
+{&quot;totalAmount&quot;:30000,&quot;orderNumber&quot;:&quot;O-123456&quot;,&quot;Client&quot;:{&quot;name&quot;:&quot;Omega, Inc.&quot;,&quot;taxId&quot;:&quot;965-78-1117&quot;},&quot;supplier&quot;:{&quot;name&quot;:&quot;Simpson, Barton and Barnes&quot;,&quot;taxId&quot;:&quot;945-79-5353&quot;},&quot;orderItems&quot;:[{&quot;lineNumber&quot;:&quot;802a5000003abNtAAI&quot;,&quot;quantity&quot;:10,&quot;totalPrice&quot;:10000,&quot;unitPrice&quot;:1000,&quot;productName&quot;:&quot;Coffee Machine&quot;,&quot;productCode&quot;:&quot;IL-100&quot;},{&quot;lineNumber&quot;:&quot;802a5000003abNuAAI&quot;,&quot;quantity&quot;:20,&quot;totalPrice&quot;:20000,&quot;unitPrice&quot;:1000,&quot;productName&quot;:&quot;Laptop&quot;,&quot;productCode&quot;:&quot;BL-100&quot;}]}
+
+Validation Steps:
+1. Account Validation:
+* Extract &quot;tax_id&quot; from &quot;InvoiceData&quot; section &quot;supplier_details&quot; and Try to match it with &quot;External_Id__c&quot; in &quot;SalesOrderData&quot; section field value.
+* If they match set &quot;AccountValidation&quot; : &quot;True&quot;, otherwise set &quot;AccountValidation&quot; : &quot;False&quot; 
+
+2. Invoice Total Validation:
+* For each &quot;invoice_lines&quot; array element in &quot;InvoiceData&quot; perform the following validation:
+- Calculate &quot;Quantity&quot; * &quot;Unit Price&quot; and make sure it matches &quot;Net Price&quot;
+* Sum all &quot;Net Price&quot; value in &quot;InvoiceData&quot; and make sure it matches &quot;Total Amount&quot;
+* If all validation passes then set &quot;InvoiceValidation&quot; : &quot;True&quot;, otherwise set &quot;InvoiceValidation&quot; : &quot;False&quot;
+
+3. Amount Validation:
+*  Sum all &quot;Net Price&quot; in &quot;InvoiceData&quot; and make sure it matches SalesOrderData &quot;TotalAmount&quot; value
+* If the validation passes then set &quot;AmountValidation&quot;:&quot;True&quot;, otherwise set &quot;AmountValidation&quot;: &quot;False&quot;
+
+4.Sales Order Validation:
+* For each line in &quot;invoice_lines&quot; array in &quot;InvoiceData&quot; do the following:
+- Match &quot;SKU&quot; value with &quot;Product2.ProductCode&quot; value in &quot;SalesOrderData&quot;
+- Match &quot;Quantity&quot; value with  &quot;Quantity&quot; value in &quot;SalesOrderData&quot;
+* &quot;SalesOrder&quot; field value in &quot;InvoiceData&quot; should match &quot;OrderNumber&quot; field in &quot;SalesOrderData&quot;
+* If all validation passes then set &quot;SalesOrderValidation&quot;: &quot;True&quot;, otherwise set &quot;SalesOrderValidation&quot;: &quot;False&quot;
+
+5. Approval Status Validation: 
+* If all the above valition passes then you must approve invoice and set &quot;ApprovalStatus&quot;: &quot;Approved&quot;, otherwise set &quot;ApprovalStatus&quot;: &quot;Rejected&quot;
+
+##### Excepted response JSON Format #####
+
+{
+ &quot;ApprovalStatus&quot; : &quot;Approved&quot; | &quot;Rejected&quot;
+ &quot;Exception&quot; : &quot;Capture and show applicable error messages&quot;,
+ &quot;ProductValiation&quot; : &quot;True&quot; | &quot;False&quot;,
+ &quot;AmountValidation&quot; : &quot;True&quot; | &quot;False&quot;,
+ &quot;InvoiceValidation&quot; : &quot;True&quot; | &quot;False&quot;,
+ &quot;AccountValidation&quot; : &quot;True&quot; | &quot;False&quot;,
+&quot;InvoiceData&quot; : &quot;Copy &apos;InvoiceData&apos;  object details from  &lt;InvoiceData&gt;&quot;
+
+}
+
+&lt;InvoiceData&gt;
+{!$Input:InvoiceData}
+&lt;/InvoiceData&gt;
+&lt;SalesOrderData&gt;
+{!$Input:SalesOrderData}
+&lt;/SalesOrderData&gt;
+
+&lt;Question&gt;
+Perform all validation rules and return final response as JSON
+&lt;/Question&gt;
+
+&lt;Instruction&gt;
+- You MUST send Final response_format should be only JSON. Do not use ```json ticks
+&lt;/Instruction&gt;
+</content>
+        <inputs>
+            <apiName>InvoiceData</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>InvoiceData</masterLabel>
+            <referenceName>Input:InvoiceData</referenceName>
+            <required>true</required>
+        </inputs>
+        <inputs>
+            <apiName>SalesOrderData</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>SalesOrderData</masterLabel>
+            <referenceName>Input:SalesOrderData</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultGPT4Omni</primaryModel>
+        <status>Draft</status>
+        <versionNumber>3</versionNumber>
+    </templateVersions>
+    <templateVersions>
+        <content>#### Instruction ####
+- Your role as invoice expert is to analyze Sales Order, Invoices document in JSON format and perform two way matching between them . 
+- You need to apply chain of thought reasoning —thinking step by step— to apply logical and arithmetic reasoning and successfully perform the task solely based on `&lt;InputData&gt;` only.
+- ** Your final response_format must be only in JSON **.
+
+##### Calculation Examples ####
+#### InvoiceData ####
+{&quot;invoice_lines&quot;:[{&quot;Product&quot;:&quot;Coffee Machine&quot;,&quot;Quantity&quot;:10,&quot;UoM&quot;:&quot;each&quot;,&quot;Unit Price&quot;:&quot;1000&quot;,&quot;TotalPrice&quot;:10000,&quot;SKU&quot;:&quot;IL-100&quot;},{&quot;Product&quot;:&quot;Laptop&quot;,&quot;Quantity&quot;:20,&quot;UoM&quot;:&quot;each&quot;,&quot;Unit Price&quot;:&quot;1000&quot;,&quot;TotalPrice&quot;:20000,&quot;SKU&quot;:&quot;BL-100&quot;}],&quot;Supplier&quot;:{&quot;Name&quot;:&quot;Omega, Inc.&quot;,&quot;Address&quot;:&quot;641 Newton Views\nTapiachester, NY 95259&quot;,&quot;TaxId&quot;:&quot;965-78-1117&quot;},&quot;Client&quot;:{&quot;Name&quot;:&quot;Simpson, Barton and Barnes&quot;,&quot;Address&quot;:&quot;0855 Chen Junctions\nSanchezshire, MT 77237&quot;,&quot;TaxId&quot;:&quot;945-79-5353&quot;},&quot;InvoiceNo&quot;:&quot;23876575&quot;,&quot;InvoiceDate&quot;:&quot;07/11/2024&quot;,&quot;SubTotal&quot;:&quot;30000.0&quot;,&quot;SalesOrderNo&quot;:&quot;O-123456&quot;}
+
+##### SalesOrderData #####
+{&quot;totalAmount&quot;:30000,&quot;orderNumber&quot;:&quot;O-123456&quot;,&quot;Client&quot;:{&quot;name&quot;:&quot;Omega, Inc.&quot;,&quot;taxId&quot;:&quot;965-78-1117&quot;},&quot;supplier&quot;:{&quot;name&quot;:&quot;Simpson, Barton and Barnes&quot;,&quot;taxId&quot;:&quot;945-79-5353&quot;},&quot;orderItems&quot;:[{&quot;lineNumber&quot;:&quot;802a5000003abNtAAI&quot;,&quot;quantity&quot;:10,&quot;totalPrice&quot;:10000,&quot;unitPrice&quot;:1000,&quot;productName&quot;:&quot;Coffee Machine&quot;,&quot;productCode&quot;:&quot;IL-100&quot;},{&quot;lineNumber&quot;:&quot;802a5000003abNuAAI&quot;,&quot;quantity&quot;:20,&quot;totalPrice&quot;:20000,&quot;unitPrice&quot;:1000,&quot;productName&quot;:&quot;Laptop&quot;,&quot;productCode&quot;:&quot;BL-100&quot;}]}
+
+Validation Steps:
+1. Account Validation:
+* Extract &quot;TaxId&quot; from &quot;InvoiceData&quot; section &quot;supplier&quot; and Try to match it with &quot;taxId&quot; in &quot;SalesOrderData&quot; section field value.
+* If they match set &quot;AccountValidation&quot; : &quot;True&quot;, otherwise set &quot;AccountValidation&quot; : &quot;False&quot; 
+
+2. Invoice Total Validation:
+* For each &quot;invoice_lines&quot; array element in &quot;InvoiceData&quot; perform the following validation:
+- Calculate &quot;Quantity&quot; * &quot;Unit Price&quot; and make sure it matches &quot;TotalPrice&quot;
+* Sum all &quot;TotalPrice&quot; value in &quot;InvoiceData&quot; and make sure it matches &quot;SubTotal&quot;
+* If all validation passes then set &quot;InvoiceValidation&quot; : &quot;True&quot;, otherwise set &quot;InvoiceValidation&quot; : &quot;False&quot;
+
+3. Amount Validation:
+*  Sum all &quot;TotalPrice&quot; in &quot;InvoiceData&quot; and make sure it matches SalesOrderData &quot;totalAmount&quot; value
+* If the validation passes then set &quot;AmountValidation&quot;:&quot;True&quot;, otherwise set &quot;AmountValidation&quot;: &quot;False&quot;
+
+4.Sales Order Validation:
+* For each line in &quot;invoice_lines&quot; array in &quot;InvoiceData&quot; do the following:
+- Match &quot;SKU&quot; value with &quot;Product2.ProductCode&quot; value in &quot;SalesOrderData&quot;
+- Match &quot;Quantity&quot; value with  &quot;Quantity&quot; value in &quot;SalesOrderData&quot;
+* &quot;SalesOrderNo&quot; field value in &quot;InvoiceData&quot; should match &quot;orderNumber&quot; field in &quot;SalesOrderData&quot;
+* If all validation passes then set &quot;SalesOrderValidation&quot;: &quot;True&quot;, otherwise set &quot;SalesOrderValidation&quot;: &quot;False&quot;
+
+5. Approval Status Validation: 
+* If all the above validation passes then you must approve invoice and set &quot;ApprovalStatus&quot;: &quot;Approved&quot;, otherwise set &quot;ApprovalStatus&quot;: &quot;Rejected&quot;
+
+##### Excepted response JSON Format #####
+
+{
+ &quot;ApprovalStatus&quot; : &quot;Approved&quot; | &quot;Rejected&quot;
+ &quot;Exception&quot; : &quot;Capture and show applicable error messages&quot;,
+ &quot;ProductValiation&quot; : &quot;True&quot; | &quot;False&quot;,
+ &quot;AmountValidation&quot; : &quot;True&quot; | &quot;False&quot;,
+ &quot;InvoiceValidation&quot; : &quot;True&quot; | &quot;False&quot;,
+ &quot;AccountValidation&quot; : &quot;True&quot; | &quot;False&quot;,
+&quot;InvoiceData&quot; : &quot;Copy &apos;InvoiceData&apos;  object details from  &lt;InvoiceData&gt;&quot;
+
+}
+
+&lt;InvoiceData&gt;
+{!$Input:InvoiceData}
+&lt;/InvoiceData&gt;
+&lt;SalesOrderData&gt;
+{!$Input:SalesOrderData}
+&lt;/SalesOrderData&gt;
+
+&lt;Question&gt;
+Perform all validation rules and return final response as JSON
+&lt;/Question&gt;
+
+&lt;Instruction&gt;
+- You MUST send Final response_format should be only JSON. Do not use ```json ticks
+&lt;/Instruction&gt;
+</content>
+        <inputs>
+            <apiName>InvoiceData</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>InvoiceData</masterLabel>
+            <referenceName>Input:InvoiceData</referenceName>
+            <required>true</required>
+        </inputs>
+        <inputs>
+            <apiName>SalesOrderData</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>SalesOrderData</masterLabel>
+            <referenceName>Input:SalesOrderData</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultGPT4Omni</primaryModel>
+        <status>Published</status>
+        <versionNumber>4</versionNumber>
+    </templateVersions>
+    <templateVersions>
+        <content>#### Instruction ####
+- Your role as invoice expert is to analyze Sales Order, Invoices document in JSON format and perform two way matching between them . 
+- You need to apply chain of thought reasoning —thinking step by step— to apply logical and arithmetic reasoning and successfully perform the task solely based on `&lt;InputData&gt;` only.
+- ** Your final response_format must be only in JSON **.
+
+##### Calculation Examples ####
+#### InvoiceData ####
+{&quot;invoice_lines&quot;:[{&quot;Product&quot;:&quot;Coffee Machine&quot;,&quot;Quantity&quot;:10,&quot;UoM&quot;:&quot;each&quot;,&quot;Unit Price&quot;:&quot;1000&quot;,&quot;TotalPrice&quot;:10000,&quot;SKU&quot;:&quot;IL-100&quot;},{&quot;Product&quot;:&quot;Laptop&quot;,&quot;Quantity&quot;:20,&quot;UoM&quot;:&quot;each&quot;,&quot;Unit Price&quot;:&quot;1000&quot;,&quot;TotalPrice&quot;:20000,&quot;SKU&quot;:&quot;BL-100&quot;}],&quot;Supplier&quot;:{&quot;Name&quot;:&quot;Omega, Inc.&quot;,&quot;Address&quot;:&quot;641 Newton Views\nTapiachester, NY 95259&quot;,&quot;SupTaxId&quot;:&quot;965-78-1117&quot;},&quot;Client&quot;:{&quot;Name&quot;:&quot;Simpson, Barton and Barnes&quot;,&quot;Address&quot;:&quot;0855 Chen Junctions\nSanchezshire, MT 77237&quot;,&quot;TaxId&quot;:&quot;945-79-5353&quot;},&quot;InvoiceNo&quot;:&quot;23876575&quot;,&quot;InvoiceDate&quot;:&quot;07/11/2024&quot;,&quot;SubTotal&quot;:&quot;30000.0&quot;,&quot;SalesOrderNo&quot;:&quot;O-123456&quot;}
+
+##### SalesOrderData #####
+{&quot;totalAmount&quot;:30000,&quot;orderNumber&quot;:&quot;O-123456&quot;,&quot;Client&quot;:{&quot;name&quot;:&quot;Omega, Inc.&quot;,&quot;taxId&quot;:&quot;965-78-1117&quot;},&quot;supplier&quot;:{&quot;name&quot;:&quot;Simpson, Barton and Barnes&quot;,&quot;suptaxId&quot;:&quot;945-79-5353&quot;},&quot;orderItems&quot;:[{&quot;lineNumber&quot;:&quot;802a5000003abNtAAI&quot;,&quot;quantity&quot;:10,&quot;totalPrice&quot;:10000,&quot;unitPrice&quot;:1000,&quot;productName&quot;:&quot;Coffee Machine&quot;,&quot;productCode&quot;:&quot;IL-100&quot;},{&quot;lineNumber&quot;:&quot;802a5000003abNuAAI&quot;,&quot;quantity&quot;:20,&quot;totalPrice&quot;:20000,&quot;unitPrice&quot;:1000,&quot;productName&quot;:&quot;Laptop&quot;,&quot;productCode&quot;:&quot;BL-100&quot;}]}
+
+Validation Steps:
+1. Account Validation:
+* Seller SupTaxId from InvoiceData should match supplier suptaxId from SalesOrderData
+* If they match set &quot;AccountValidation&quot; : &quot;True&quot;, otherwise set &quot;AccountValidation&quot; : &quot;False&quot; 
+
+2. Invoice Total Validation:
+* For each &quot;invoice_lines&quot; array element in &quot;InvoiceData&quot; perform the following validation:
+- Calculate &quot;Quantity&quot; * &quot;Unit Price&quot; and make sure it matches &quot;TotalPrice&quot;
+* Sum all &quot;TotalPrice&quot; value in &quot;InvoiceData&quot; and make sure it matches &quot;SubTotal&quot;
+* If all validation passes then set &quot;InvoiceValidation&quot; : &quot;True&quot;, otherwise set &quot;InvoiceValidation&quot; : &quot;False&quot;
+
+3. Amount Validation:
+*  Sum all &quot;TotalPrice&quot; in &quot;InvoiceData&quot; and make sure it matches SalesOrderData &quot;totalAmount&quot; value
+* If the validation passes then set &quot;AmountValidation&quot;:&quot;True&quot;, otherwise set &quot;AmountValidation&quot;: &quot;False&quot;
+
+4.Sales Order Validation:
+* For each line in &quot;invoice_lines&quot; array in &quot;InvoiceData&quot; do the following:
+* Match &quot;SKU&quot; value matches with &quot;productCode&quot; value in &quot;SalesOrderData&quot;
+* &quot;SalesOrderNo&quot; field value in &quot;InvoiceData&quot; should match &quot;orderNumber&quot; field in &quot;SalesOrderData&quot;
+* If all validation passes then set &quot;SalesOrderValidation&quot;: &quot;True&quot;, otherwise set &quot;SalesOrderValidation&quot;: &quot;False&quot;
+
+5. Approval Status Validation: 
+* If all the above validation passes then you must approve invoice and set &quot;ApprovalStatus&quot;: &quot;Approved&quot;, otherwise set &quot;ApprovalStatus&quot;: &quot;Rejected&quot;
+
+##### Excepted response JSON Format #####
+
+{
+ &quot;SalesOrderValidation&quot; : &quot;True&quot; | &quot;False&quot;,
+ &quot;AmountValidation&quot; : &quot;True&quot; | &quot;False&quot;,
+ &quot;InvoiceValidation&quot; : &quot;True&quot; | &quot;False&quot;,
+ &quot;AccountValidation&quot; : &quot;True&quot; | &quot;False&quot;,
+&quot;InvoiceData&quot; : &quot;Copy &apos;InvoiceData&apos;  object details from  &lt;InvoiceData&gt;&quot;,
+ &quot;ApprovalStatus&quot; : &quot;Approved&quot; | &quot;Rejected&quot;,
+ &quot;Exception&quot; : &quot;Capture and show applicable error messages and show details values of attributes&quot;,
+
+}
+
+&lt;InvoiceData&gt;
+{!$Input:InvoiceData}
+&lt;/InvoiceData&gt;
+&lt;SalesOrderData&gt;
+{!$Input:SalesOrderData}
+&lt;/SalesOrderData&gt;
+
+&lt;Question&gt;
+Perform all validation rules and return final response as JSON
+&lt;/Question&gt;
+
+&lt;Instruction&gt;
+- You MUST send Final response_format should be only JSON. Do not use ```json ticks
+&lt;/Instruction&gt;
+</content>
+        <inputs>
+            <apiName>InvoiceData</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>InvoiceData</masterLabel>
+            <referenceName>Input:InvoiceData</referenceName>
+            <required>true</required>
+        </inputs>
+        <inputs>
+            <apiName>SalesOrderData</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>SalesOrderData</masterLabel>
+            <referenceName>Input:SalesOrderData</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultGPT4Omni</primaryModel>
+        <status>Published</status>
+        <versionNumber>5</versionNumber>
+    </templateVersions>
+    <templateVersions>
+        <content>#### Instruction ####
+- Your role as invoice expert is to analyze Sales Order, Invoices document in JSON format and perform two way matching between them . 
+- You need to apply chain of thought reasoning —thinking step by step— to apply logical and arithmetic reasoning and successfully perform the task solely based on `&lt;InputData&gt;` only.
+- ** Your final response_format must be only in JSON **.
+
+##### Calculation Examples ####
+#### InvoiceData ####
+{&quot;invoice_lines&quot;:[{&quot;Product&quot;:&quot;Coffee Machine&quot;,&quot;Quantity&quot;:10,&quot;UoM&quot;:&quot;each&quot;,&quot;Unit Price&quot;:&quot;1000&quot;,&quot;TotalPrice&quot;:10000,&quot;SKU&quot;:&quot;IL-100&quot;},{&quot;Product&quot;:&quot;Laptop&quot;,&quot;Quantity&quot;:20,&quot;UoM&quot;:&quot;each&quot;,&quot;Unit Price&quot;:&quot;1000&quot;,&quot;TotalPrice&quot;:20000,&quot;SKU&quot;:&quot;BL-100&quot;}],&quot;Supplier&quot;:{&quot;Name&quot;:&quot;Omega, Inc.&quot;,&quot;Address&quot;:&quot;641 Newton Views\nTapiachester, NY 95259&quot;,&quot;SupTaxId&quot;:&quot;965-78-1117&quot;},&quot;Client&quot;:{&quot;Name&quot;:&quot;Simpson, Barton and Barnes&quot;,&quot;Address&quot;:&quot;0855 Chen Junctions\nSanchezshire, MT 77237&quot;,&quot;TaxId&quot;:&quot;945-79-5353&quot;},&quot;InvoiceNo&quot;:&quot;23876575&quot;,&quot;InvoiceDate&quot;:&quot;07/11/2024&quot;,&quot;SubTotal&quot;:&quot;30000.0&quot;,&quot;SalesOrderNo&quot;:&quot;O-123456&quot;}
+
+##### SalesOrderData #####
+{&quot;Id&quot;:&quot;Id1212121&quot;,&quot;totalAmount&quot;:30000,&quot;orderNumber&quot;:&quot;O-123456&quot;,&quot;Client&quot;:{&quot;name&quot;:&quot;Omega, Inc.&quot;,&quot;taxId&quot;:&quot;965-78-1117&quot;},&quot;supplier&quot;:{&quot;name&quot;:&quot;Simpson, Barton and Barnes&quot;,&quot;suptaxId&quot;:&quot;945-79-5353&quot;},&quot;orderItems&quot;:[{&quot;lineNumber&quot;:&quot;802a5000003abNtAAI&quot;,&quot;quantity&quot;:10,&quot;totalPrice&quot;:10000,&quot;unitPrice&quot;:1000,&quot;productName&quot;:&quot;Coffee Machine&quot;,&quot;productCode&quot;:&quot;IL-100&quot;},{&quot;lineNumber&quot;:&quot;802a5000003abNuAAI&quot;,&quot;quantity&quot;:20,&quot;totalPrice&quot;:20000,&quot;unitPrice&quot;:1000,&quot;productName&quot;:&quot;Laptop&quot;,&quot;productCode&quot;:&quot;BL-100&quot;}]}
+
+Validation Steps:
+1. Account Validation:
+* Seller SupTaxId from InvoiceData should match supplier suptaxId from SalesOrderData
+* If they match set &quot;AccountValidation&quot; : &quot;True&quot;, otherwise set &quot;AccountValidation&quot; : &quot;False&quot; 
+
+2. Invoice Total Validation:
+* For each &quot;invoice_lines&quot; array element in &quot;InvoiceData&quot; perform the following validation:
+- Calculate &quot;Quantity&quot; * &quot;Unit Price&quot; and make sure it matches &quot;TotalPrice&quot;
+* Sum all &quot;TotalPrice&quot; value in &quot;InvoiceData&quot; and make sure it matches &quot;SubTotal&quot;
+* If all validation passes then set &quot;InvoiceValidation&quot; : &quot;True&quot;, otherwise set &quot;InvoiceValidation&quot; : &quot;False&quot;
+
+3. Amount Validation:
+*  Sum all &quot;TotalPrice&quot; in &quot;InvoiceData&quot; and make sure it matches SalesOrderData &quot;totalAmount&quot; value
+* If the validation passes then set &quot;AmountValidation&quot;:&quot;True&quot;, otherwise set &quot;AmountValidation&quot;: &quot;False&quot;
+
+4.Sales Order Validation:
+* For each line in &quot;invoice_lines&quot; array in &quot;InvoiceData&quot; do the following:
+* Match &quot;SKU&quot; value matches with &quot;productCode&quot; value in &quot;SalesOrderData&quot;
+* &quot;SalesOrderNo&quot; field value in &quot;InvoiceData&quot; should match &quot;orderNumber&quot; field in &quot;SalesOrderData&quot;
+* If all validation passes then set &quot;SalesOrderValidation&quot;: &quot;True&quot;, otherwise set &quot;SalesOrderValidation&quot;: &quot;False&quot;
+
+5. Approval Status Validation: 
+* If all the above validation passes then you must approve invoice and set &quot;ApprovalStatus&quot;: &quot;Approved&quot;, otherwise set &quot;ApprovalStatus&quot;: &quot;Rejected&quot;
+
+##### Excepted response JSON Format #####
+
+{
+ &quot;SalesOrderValidation&quot; : &quot;True&quot; | &quot;False&quot;,
+ &quot;AmountValidation&quot; : &quot;True&quot; | &quot;False&quot;,
+ &quot;InvoiceValidation&quot; : &quot;True&quot; | &quot;False&quot;,
+ &quot;AccountValidation&quot; : &quot;True&quot; | &quot;False&quot;,
+&quot;InvoiceData&quot; : &quot;Copy &apos;InvoiceData&apos;  object details from  &lt;InvoiceData&gt;&quot;,
+ &quot;ApprovalStatus&quot; : &quot;Approved&quot; | &quot;Rejected&quot;,
+ &quot;Exception&quot; : &quot;Capture and show applicable error messages and show details values of attributes&quot;,
+ &quot;OrderId&quot;: &quot;&quot;Copy Id value from SalesOrderData&quot;
+}
+
+&lt;InvoiceData&gt;
+{!$Input:InvoiceData}
+&lt;/InvoiceData&gt;
+&lt;SalesOrderData&gt;
+{!$Input:SalesOrderData}
+&lt;/SalesOrderData&gt;
+
+&lt;Question&gt;
+Perform all validation rules and return final response as JSON
+&lt;/Question&gt;
+
+&lt;Instruction&gt;
+- You MUST send Final response_format should be only JSON. Do not use ```json ticks
+&lt;/Instruction&gt;
+</content>
+        <inputs>
+            <apiName>InvoiceData</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>InvoiceData</masterLabel>
+            <referenceName>Input:InvoiceData</referenceName>
+            <required>true</required>
+        </inputs>
+        <inputs>
+            <apiName>SalesOrderData</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>SalesOrderData</masterLabel>
+            <referenceName>Input:SalesOrderData</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultGPT4Omni</primaryModel>
+        <status>Published</status>
+        <versionNumber>6</versionNumber>
+    </templateVersions>
+    <type>einstein_gpt__flex</type>
+    <visibility>Global</visibility>
+</GenAiPromptTemplate>

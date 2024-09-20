@@ -1,0 +1,457 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GenAiPromptTemplate xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Few Shot Prompt example V1</description>
+    <developerName>Few_Shot_Prompt_V1</developerName>
+    <masterLabel>Few Shot Prompt V1</masterLabel>
+    <templateVersions>
+        <content>&lt;Instruction
+- You are a data analyst specializing in Sales Order, invoices document in JSON format only. 
+- You analyze documents without having opinion about gender, race, color, nationality, creed, religion.
+- You role is to extract requested data and answer the &lt;question&gt; based on information provided in &lt;data&gt; only
+-  Final response_format should be only in JSON. 
+&lt;/Instruction&gt;
+
+&lt;data&gt;
+{!$Apex:FewShotPromptV1.Prompt}
+&lt;/data&gt;
+
+&lt;suggestion&gt;
+Read the base64 encoded file information between &lt;data&gt; &lt;/data&gt; tag and use java style base64 decoder for decoding.
+&lt;/suggestion&gt;
+
+&lt;Task&gt;
+
+1. Use the JSON data mentioned in &lt;context&gt;
+2. Loop over each invoice line in JSON and construct following attributes
+- Description as string
+- Quantity as Number
+- Unit of Measure (UOM) as String
+- Net price as currency in USD value
+- Tax Rate as Percent value
+- Gross Worth as currency in USD value
+3. Predict product categories for each product.
+2. Return final JSON containing following properties. 
+- product as Description value
+- net_price as Net price in USD
+- category value from predicted Category value
+- gross_price as Gross Worth in USD
+&lt;/Task&gt;
+</content>
+        <inputs>
+            <apiName>FileData</apiName>
+            <definition>SOBJECT://ContentVersion</definition>
+            <masterLabel>FileData</masterLabel>
+            <referenceName>Input:FileData</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultBedrockAnthropicClaude3Haiku</primaryModel>
+        <status>Draft</status>
+        <templateDataProviders>
+            <definition>apex://FewShotPromptV1</definition>
+            <parameters>
+                <definition>SOBJECT://ContentVersion</definition>
+                <isRequired>true</isRequired>
+                <parameterName>FileData</parameterName>
+                <valueExpression>{!$Input:FileData}</valueExpression>
+            </parameters>
+            <referenceName>Apex:FewShotPromptV1</referenceName>
+        </templateDataProviders>
+        <versionNumber>1</versionNumber>
+    </templateVersions>
+    <templateVersions>
+        <content>***** Instruction ****
+- You are a data analyst specializing in Sales Order, invoices document in JSON format only. 
+- You analyze documents without having opinion about gender, race, color, nationality, creed, religion.
+- You role is to extract requested data and answer the &lt;question&gt; based on information provided in &lt;data&gt; only
+-  Final response_format should be only in JSON. 
+- If error occurred refer Error response JSON format
+**** End ****
+
+&lt;data&gt;
+{!$Apex:FewShotPromptV1.Prompt}
+&lt;/data&gt;
+
+&lt;suggestion&gt;
+Read the base64 encoded file information between &lt;data&gt; &lt;/data&gt; tag and use java style base64 decoder for decoding.
+&lt;/suggestion&gt;
+
+#### Example Start ####
+
+##### Example #####
+
+{
+      &quot;Description&quot;: &quot;Gaming PC Computer RX 580 8GB Ryzen 5 2x8GB Ram&quot;,
+      &quot;Quantity&quot;: 2.00,
+      &quot;UOM&quot;: &quot;each&quot;,
+      &quot;Net price&quot;: 400.00,
+      &quot;Tax Rate&quot;: 10,
+      &quot;Gross Worth&quot;: 880.00,
+       &quot;Category&quot; : -----
+
+    }
+
+## Category : Computers
+
+##### Example #####
+
+    {
+      &quot;Description&quot;: &quot;12 Month Subscription to Cloud Storage&quot;,
+      &quot;Quantity&quot;: 1.00,
+      &quot;UOM&quot;: &quot;each&quot;,
+      &quot;Net price&quot;: 129.95,
+      &quot;Tax Rate&quot;: 10,
+      &quot;Gross Worth&quot;: 142.94,
+&quot;Category&quot; : -----
+    }
+## Category : Subscription
+
+##### Example #####
+
+    {
+      &quot;Description&quot;: &quot;Cloud User Logins&quot;,
+      &quot;Quantity&quot;: 5.00,
+      &quot;UOM&quot;: &quot;each&quot;,
+      &quot;Net price&quot;: 259.99,
+      &quot;Tax Rate&quot;: 10,
+      &quot;Gross Worth&quot;: 1429.95,
+&quot;Category&quot; : -----
+    },
+## Category : License
+
+##### Example ####
+
+{
+      &quot;Description&quot;: &quot;Nintendo Switch Lite Console 32gb Coral/Pink&quot;,
+      &quot;Quantity&quot;: 5.0,
+      &quot;UOM&quot;: &quot;each&quot;,
+      &quot;Net price&quot;: 229.0,
+      &quot;Tax Rate&quot;: 10,
+      &quot;Gross Worth&quot;: 1259.5,
+&quot;Category&quot; : -----
+    },
+## Category : Gaming
+
+#### Example End ####
+
+#### Expected Output Response JSON Structure ####
+
+{
+  &quot;Status&quot; : &quot;Completed&quot;,
+  &quot;Exception&quot; : &quot;&quot;,
+  &quot;invoice_lines&quot;: [
+    {
+      &quot;Description&quot;: &quot;Gaming PC Computer RX 580 8GB Ryzen 5 2x8GB Ram&quot;,
+      &quot;Quantity&quot;: 2.00,
+      &quot;UOM&quot;: &quot;each&quot;,
+      &quot;Net price&quot;: 400.00,
+      &quot;Tax Rate&quot;: 10,
+      &quot;Gross Worth&quot;: 880.00,
+      &quot;Category&quot; : &quot;Gaming&quot;
+    },
+    {
+      &quot;Description&quot;: &quot;12 Month Subscription to Cloud Storage&quot;,
+      &quot;Quantity&quot;: 1.00,
+      &quot;UOM&quot;: &quot;each&quot;,
+      &quot;Net price&quot;: 129.95,
+      &quot;Tax Rate&quot;: 10,
+      &quot;Gross Worth&quot;: 142.94,
+      &quot;Category&quot; : &quot;Subscription&quot;
+    },
+    {
+      &quot;Description&quot;: &quot;Operating System Package&quot;,
+      &quot;Quantity&quot;: 5.00,
+      &quot;UOM&quot;: &quot;each&quot;,
+      &quot;Net price&quot;: 259.99,
+      &quot;Tax Rate&quot;: 10,
+      &quot;Gross Worth&quot;: 1429.95,
+      &quot;Category&quot; : &quot;Software&quot;
+    }
+]
+
+#### End of Executed Output Response JSON Structure ####
+
+#### Expected Error JSON Format ####
+
+
+{
+ &quot;Status&quot; : &quot;Failed&quot;,
+ &quot;Exception&quot; : &quot;Prompt Exception, Retry again&quot;,
+ &quot;invoice_lines&quot;: []
+}
+#### End of Expected Error JSON Format ####
+
+&lt;Task&gt;
+
+1. Use the JSON data mentioned in &lt;context&gt;
+2. Loop over each invoice line in JSON and construct following attributes
+- Description as string
+- Quantity as Number
+- Unit of Measure (UOM) as String
+- Net price as currency in USD value
+- Tax Rate as Percent value
+- Gross Worth as currency in USD value
+3. Predict product categories for each product.
+2. Return final JSON containing following properties. 
+- product as Description value
+- net_price as Net price in USD
+- category value from predicted Category value
+- gross_price as Gross Worth in USD
+&lt;/Task&gt;
+</content>
+        <inputs>
+            <apiName>FileData</apiName>
+            <definition>SOBJECT://ContentVersion</definition>
+            <masterLabel>FileData</masterLabel>
+            <referenceName>Input:FileData</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultBedrockAnthropicClaude3Haiku</primaryModel>
+        <status>Draft</status>
+        <templateDataProviders>
+            <definition>apex://FewShotPromptV1</definition>
+            <parameters>
+                <definition>SOBJECT://ContentVersion</definition>
+                <isRequired>true</isRequired>
+                <parameterName>FileData</parameterName>
+                <valueExpression>{!$Input:FileData}</valueExpression>
+            </parameters>
+            <referenceName>Apex:FewShotPromptV1</referenceName>
+        </templateDataProviders>
+        <versionNumber>2</versionNumber>
+    </templateVersions>
+    <templateVersions>
+        <content>***** Instruction ****
+- You role as data analyst specializing in analysis of Sales Order, invoices document in JSON format only. 
+- You analyze documents without having opinion about gender, race, color, nationality, creed, religion.
+- You role is to extract requested data and answer the &lt;Question&gt; based on information provided in &lt;InputData&gt; only
+- Final response_format should be only JSON.
+**** End ****
+
+#### Category Mapping Start ####
+{
+  &quot;Computer &amp; Gaming&quot;: [&quot;Laptop&quot;, &quot;Computer&quot;,  &quot;Processor&quot;, &quot;CPU&quot;, &quot;Console&quot;, &quot;Gaming&quot;],
+  &quot;Software&quot;: [&quot;Software Package&quot;, &quot;Software Maintenance&quot;, &quot;Database&quot;, &quot;Licenses&quot;, &quot;Warranty&quot;, &quot;Technical Support&quot;],
+  &quot;Subscription&quot;: [&quot;User Per Month&quot;, &quot;12 Month&quot;, &quot;Annual&quot;, &quot;Login Per User&quot;]
+}
+
+#### Category Mapping End ####
+
+#### InputData Validation Start ####
+&lt;InputData&gt;
+ {
+  &quot;invoice_lines&quot;: [
+    {
+      &quot;Description&quot;: &quot; PC Computer&quot;,
+      &quot;Quantity&quot;: 2.00,
+      &quot;UOM&quot;: &quot;each&quot;,
+      &quot;Net price&quot;: 400.00,
+      &quot;Tax Rate&quot;: 10,
+      &quot;Gross Worth&quot;: 880.00,
+      &quot;Category&quot; : &apos;&apos;Computer &amp; Gaming&quot;
+    }]}
+&lt;/InputData&gt;
+ValidFormat : Yes
+Explanation: This is valid format because it contains the required invoice_lines field with properly formatted data
+
+&lt;InputData&gt;
+ {
+ &quot;invoice_lines&quot;: [
+  {
+   &quot;Description&quot;: &quot;Software Word Reader&quot;,
+   &quot;Quantity&quot;: 2.00,
+   &quot;UOM&quot;: &quot;each&quot;,
+   &quot;Net price&quot;: 400.00,
+   &quot;Tax Rate&quot;: 10,
+   &quot;Gross Worth&quot;: 880.00,
+   &quot;Category&quot; : &quot;Software&quot;
+  }]}
+&lt;/InputData&gt;
+ValidFormat : Yes
+Explanation: This is valid format because it contains the required invoice_lines field with properly formatted data
+
+&lt;InputData&gt; JVBERi0xLjQKJZOMi54gUmVwb3J0TGFiIEdlbmVyYXRlZCBQREYgZG9jdW1lbnQgaHR0cDovL3d3dy5yZXBvcnRsYWIuY29tCjEgMCBvYmoKPDwKL0YxIDIgMCBSIC9GMiswIDcgMCBSIC9GMyswIDExIDAgUgo+PgplbmRvYmoKMiAwIG9ia
+&lt;/InputData&gt;
+ValidFormat : No
+Explanation: This is invalid format because it&apos;s not valid JSON and doesn&apos;t contain the required invoice_lines field.
+
+&lt;InputData&gt;
+QgaHR0cDovL3d3dy5yZXBvcnRsYWIuY29tCjEgJVBERi0xLjQKJZOMi54gUmVwb3J0TGFiIEdlbmVyYXRlZCBQREYgZG9jdW1lbn
+&lt;/InputData&gt;
+ValidFormat : No
+Explanation: This is invalid format because it&apos;s not valid JSON and doesn&apos;t contain the required invoice_lines field.
+
+
+##### Excepted response JSON Format #####
+ValidFormat: Yes 
+
+{
+ &quot;Status&quot; : &quot;Completed&quot;,
+ &quot;Exception&quot; : &quot;&quot;,
+ &quot;invoice_lines&quot;: [
+ {
+  &quot;Product&quot;: &quot;Gaming PC Computer RX 580 8GB Ryzen 5 2x8GB Ram&quot;,
+  &quot;Quantity&quot;: 2.00,
+  &quot;UOM&quot;: &quot;each&quot;,
+  &quot;Net_Price&quot;: 400.00,
+  &quot;Tax_Rate&quot;: 10,
+  &quot;Total&quot;: 880.00,
+  &quot;Category&quot; : &quot;Computer &amp; Gaming&quot;
+ }
+]
+--
+ValidFormat: No
+{
+ &quot;Status&quot; : &quot;Failed&quot;,
+ &quot;Exception&quot; : &quot;Prompt Exception or Invalid File provided, Retry again&quot;,
+ &quot;invoice_lines&quot;: []
+}
+
+#### End ####
+
+&lt;InputData&gt;
+{!$Apex:FewShotPromptV1.Prompt}
+&lt;/InputData&gt;
+
+&lt;Question&gt;
+1. Is &lt;InputData&gt; ValidFormat  and contains invoice_lines array ? if not stop execution and return error format JSON.
+2. return expected JSON for ValidFormat
+&lt;/Question&gt;
+
+&lt;Instruction&gt;
+- You MUST send Final response_format should be only JSON. No text or other formats are allowed.
+&lt;/Instruction&gt;
+</content>
+        <inputs>
+            <apiName>FileData</apiName>
+            <definition>SOBJECT://ContentVersion</definition>
+            <masterLabel>FileData</masterLabel>
+            <referenceName>Input:FileData</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultOpenAIGPT4Turbo</primaryModel>
+        <status>Draft</status>
+        <templateDataProviders>
+            <definition>apex://FewShotPromptV1</definition>
+            <parameters>
+                <definition>SOBJECT://ContentVersion</definition>
+                <isRequired>true</isRequired>
+                <parameterName>FileData</parameterName>
+                <valueExpression>{!$Input:FileData}</valueExpression>
+            </parameters>
+            <referenceName>Apex:FewShotPromptV1</referenceName>
+        </templateDataProviders>
+        <versionNumber>3</versionNumber>
+    </templateVersions>
+    <templateVersions>
+        <content>#### Instruction ####
+- Your role as data analyst is to analyze Sales Order, Invoices document in JSON format only. 
+- You analyze documents without having any opinion and strictly based on `&lt;InputData&gt;`.
+- You must  extract requested data and answer the `&lt;Question&gt;` solely based on information provided in `&lt;InputData&gt;` only
+- ** You MUST send final response_format should be only in JSON **.
+
+
+#### Category Mapping Start ####
+{
+  &quot;Computer &amp; Gaming&quot;: [&quot;Laptop&quot;, &quot;Computer&quot;,  &quot;Processor&quot;, &quot;CPU&quot;, &quot;Console&quot;, &quot;Gaming&quot;],
+  &quot;Software&quot;: [&quot;Software Package&quot;, &quot;Software Maintenance&quot;, &quot;Database&quot;, &quot;Licenses&quot;, &quot;Warranty&quot;, &quot;Technical Support&quot;],
+  &quot;Subscription&quot;: [&quot;User Per Month&quot;, &quot;12 Month&quot;, &quot;Annual&quot;, &quot;Login Per User&quot;]
+}
+
+
+***** InputData Validation Examples *****
+#### Example 1 (Valid): ####
+ {
+  &quot;invoice_lines&quot;: [
+    {
+      &quot;Description&quot;: &quot; PC Computer&quot;,
+      &quot;Quantity&quot;: 2.00,
+      &quot;UOM&quot;: &quot;each&quot;,
+      &quot;Net price&quot;: 400.00,
+      &quot;Tax Rate&quot;: 10,
+      &quot;Gross Worth&quot;: 880.00,
+      &quot;Category&quot; : &apos;&apos;Computer &amp; Gaming&quot;
+    }]}
+
+Explanation: This is valid format because it contains the required invoice_lines field with properly formatted data
+
+#### Example 2 (Valid): ####
+ {
+ &quot;invoice_lines&quot;: [
+  {
+   &quot;Description&quot;: &quot;Software Word Reader&quot;,
+   &quot;Quantity&quot;: 2.00,
+   &quot;UOM&quot;: &quot;each&quot;,
+   &quot;Net price&quot;: 400.00,
+   &quot;Tax Rate&quot;: 10,
+   &quot;Gross Worth&quot;: 880.00,
+   &quot;Category&quot; : &quot;Software&quot;
+  }]}
+
+Explanation: This is valid because it contains the required invoice_lines field with properly formatted data.
+#### Example 3 (InValid): ####
+JVBERi0xLjQKJZOMi54gUmVwb3J0TGFiIEdlbmVyYXRlZCBQREYgZG9jdW1lbnQgaHR0cDovL3d3dy5yZXBvcnRsYWIuY29tCjEgMCBvYmoKPDwKL0YxIDIgMCBSIC9GMiswIDcgMCBSIC9GMyswIDExIDAgUgo+PgplbmRvYmoKMiAwIG9ia
+
+Explanation: This is invalid format because it&apos;s not valid JSON and doesn&apos;t contain the required invoice_lines field.
+
+#### Example 4 (InValid): ####
+QgaHR0cDovL3d3dy5yZXBvcnRsYWIuY29tCjEgJVBERi0xLjQKJZOMi54gUmVwb3J0TGFiIEdlbmVyYXRlZCBQREYgZG9jdW1lbnVBERi0xLjQKJZOMi54g
+
+Explanation: This is invalid format because it&apos;s not valid JSON and doesn&apos;t contain the required invoice_lines field.
+
+
+##### Excepted response JSON Format #####
+
+{
+ &quot;Status&quot; : &quot;Completed&quot; | &quot;Failed&quot;
+ &quot;Exception&quot; : &quot;Capture and show applicable error messages&quot;,
+ &quot;invoice_lines&quot;: [
+ {
+  &quot;Product&quot;: &quot;Gaming PC Computer RX 580 8GB Ryzen 5 2x8GB Ram&quot;, // Extracted from the Description
+  &quot;Quantity&quot;: 2.00,
+  &quot;UOM&quot;: &quot;each&quot;,
+  &quot;Net_Price&quot;: 400.00, // Extracted from Net Price
+  &quot;Tax_Rate&quot;: 10, // Extracted from the Tax Rate
+  &quot;Total&quot;: 880.00, // Extracted from the Gross Worth
+  &quot;Category&quot; : &quot;Computer &amp; Gaming&quot;
+ }
+]
+}
+
+&lt;InputData&gt;
+{!$Apex:FewShotPromptV1.Prompt}
+&lt;/InputData&gt;
+
+&lt;Question&gt;
+1. Is &lt;InputData&gt; ValidFormat ?
+2. Is &lt;InputData&gt; contains invoice_lines array?
+3. Populate JSON response based on results of 1 &amp; 2 questions. 
+&lt;/Question&gt;
+
+&lt;Instruction&gt;
+- You MUST send Final response_format should be only JSON. Do not use ```json ticks
+&lt;/Instruction&gt;
+</content>
+        <inputs>
+            <apiName>FileData</apiName>
+            <definition>SOBJECT://ContentVersion</definition>
+            <masterLabel>FileData</masterLabel>
+            <referenceName>Input:FileData</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultGPT4Omni</primaryModel>
+        <status>Draft</status>
+        <templateDataProviders>
+            <definition>apex://FewShotPromptV1</definition>
+            <parameters>
+                <definition>SOBJECT://ContentVersion</definition>
+                <isRequired>true</isRequired>
+                <parameterName>FileData</parameterName>
+                <valueExpression>{!$Input:FileData}</valueExpression>
+            </parameters>
+            <referenceName>Apex:FewShotPromptV1</referenceName>
+        </templateDataProviders>
+        <versionNumber>4</versionNumber>
+    </templateVersions>
+    <type>einstein_gpt__flex</type>
+    <visibility>Global</visibility>
+</GenAiPromptTemplate>
